@@ -38,7 +38,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     @LogAnnotation(module = "用户", operation = "根据id获取用户")
-    @RequiresRoles(Base.ROLE_ADMIN)
+//    @RequiresRoles(Base.ROLE_ADMIN)
     public Result getUserById(@PathVariable("id") Long id) {
 
         Result r = new Result();
@@ -71,7 +71,7 @@ public class UserController {
     }
 
     @PostMapping("/create")
-    @RequiresRoles(Base.ROLE_ADMIN)
+//    @RequiresRoles(Base.ROLE_ADMIN)
     @LogAnnotation(module = "用户", operation = "添加用户")
     public Result saveUser(@Validated @RequestBody User user) {
 
@@ -83,7 +83,7 @@ public class UserController {
     }
 
     @PostMapping("/update")
-    @RequiresRoles(Base.ROLE_ADMIN)
+//    @RequiresRoles(Base.ROLE_ADMIN)
     @LogAnnotation(module = "用户", operation = "修改用户")
     public Result updateUser(@RequestBody User user) {
         Result r = new Result();
@@ -101,7 +101,7 @@ public class UserController {
     }
 
     @GetMapping("/delete/{id}")
-    @RequiresRoles(Base.ROLE_ADMIN)
+//    @RequiresRoles(Base.ROLE_ADMIN)
     @LogAnnotation(module = "用户", operation = "删除用户")
     public Result deleteUserById(@PathVariable("id") Long id) {
         Result r = new Result();
