@@ -1,104 +1,105 @@
 package com.winds.bm.entity;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.winds.bm.common.entity.BaseEntity;
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+import com.baomidou.mybatisplus.enums.FieldStrategy;
+import com.google.common.collect.Sets;
+import com.winds.bm.common.base.DataEntity;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import java.util.Date;
+import java.util.Set;
+
 /**
- * 用户
+ *
  */
-@Entity
-@Table(name = "sys_user")
-public class User extends BaseEntity<Long> {
+@TableName("sys_user")
+public class User extends DataEntity<User> {
+
+    private static final long serialVersionUID = 1L;
 
     /**
-     *
+     * 登录名
      */
-    private static final long serialVersionUID = -4454737765850239378L;
-
-
-    @NotBlank
-    @Column(name = "account", unique = true, length = 10)
-    private String account;
-
+    @TableField("login_name")
+    private String loginName;
     /**
-     * 使用md5(username + original password + salt)加密存储
+     * 昵称
      */
-    @NotBlank
-    @Column(name = "password", length = 64)
+    @TableField(value = "nick_name",strategy= FieldStrategy.IGNORED)
+    private String nickName;
+    /**
+     * 密码
+     */
     private String password;
-
     /**
-     * 头像
-     */
-    private String avatar;
-
-    @Column(name = "email", unique = true, length = 20)
-    private String email;  // 邮箱
-
-    @NotBlank
-    @Column(name = "nickname", length = 10)
-    private String nickname;
-
-    @Column(name = "mobile_phone_number", length = 20)
-    private String mobilePhoneNumber;
-
-
-    /**
-     * 加密密码时使用的种子
+     * shiro加密盐
      */
     private String salt;
-
+    /**
+     * 手机号码
+     */
+    @TableField(strategy= FieldStrategy.IGNORED)
+    private String tel;
+    /**
+     * 邮箱地址
+     */
+    @TableField(strategy= FieldStrategy.IGNORED)
+    private String email;
 
     /**
-     * 创建时间
+     * 账户是否锁定
      */
-    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "create_date")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createDate;
+    private Boolean locked;
 
+    @TableField(strategy= FieldStrategy.IGNORED)
+    private String icon;
 
-    /**
-     * 最后一次登录时间
-     */
-    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "last_login")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date lastLogin;
+    @TableField(exist=false)
+    private Set<Role> roleLists = Sets.newHashSet();
 
-    /**
-     * 系统用户的状态
-     */
-    @Enumerated(EnumType.STRING)
-    private UserStatus status = UserStatus.normal;
+    @TableField(exist=false)
+    private Set<Menu> menus = Sets.newHashSet();
 
-    /**
-     * 是否是管理员
-     */
-    private Boolean admin = false;
-
-    /**
-     * 逻辑删除flag
-     */
-    private Boolean deleted = Boolean.FALSE;
-
-    public String getAccount() {
-        return account;
+    public String getLoginName() {
+        return loginName;
     }
 
-    public void setAccount(String account) {
-        this.account = account;
+    public void setLoginName(String loginName) {
+        this.loginName = loginName;
     }
 
-    public String getNickname() {
-        return nickname;
+    public String getNickName() {
+        return nickName;
     }
 
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
+
+    @JSONField(serialize=false)
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @JSONField(serialize=false)
+    public String getSalt() {
+        return salt;
+    }
+
+    public void setSalt(String salt) {
+        this.salt = salt;
+    }
+
+    public String getTel() {
+        return tel;
+    }
+
+    public void setTel(String tel) {
+        this.tel = tel;
     }
 
     public String getEmail() {
@@ -109,85 +110,35 @@ public class User extends BaseEntity<Long> {
         this.email = email;
     }
 
-    public String getAvatar() {
-        return avatar;
+    public Boolean getLocked() {
+        return locked;
     }
 
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
+    public void setLocked(Boolean locked) {
+        this.locked = locked;
     }
 
-    public String getMobilePhoneNumber() {
-        return mobilePhoneNumber;
+    public String getIcon() {
+        return icon;
     }
 
-    public void setMobilePhoneNumber(String mobilePhoneNumber) {
-        this.mobilePhoneNumber = mobilePhoneNumber;
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 
-    public String getPassword() {
-        return password;
+    public Set<Role> getRoleLists() {
+        return roleLists;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setRoleLists(Set<Role> roleLists) {
+        this.roleLists = roleLists;
     }
 
-    public String getSalt() {
-        return salt;
+    public Set<Menu> getMenus() {
+        return menus;
     }
 
-    public void setSalt(String salt) {
-        this.salt = salt;
+    public void setMenus(Set<Menu> menus) {
+        this.menus = menus;
     }
-
-    public Date getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
-
-    public UserStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(UserStatus status) {
-        this.status = status;
-    }
-
-    public Boolean getAdmin() {
-        return admin;
-    }
-
-    public void setAdmin(Boolean admin) {
-        this.admin = admin;
-    }
-
-    public Boolean getDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
-    }
-
-    public Date getLastLogin() {
-        return lastLogin;
-    }
-
-    public void setLastLogin(Date lastLogin) {
-        this.lastLogin = lastLogin;
-    }
-
-    @Override
-    public String toString() {
-        return "User [account=" + account + ", password=" + password + ", avatar=" + avatar + ", email=" + email
-                + ", nickname=" + nickname + ", mobilePhoneNumber=" + mobilePhoneNumber + ", salt=" + salt
-                + ", createDate=" + createDate + ", lastLogin=" + lastLogin + ", status=" + status + ", admin=" + admin
-                + ", deleted=" + deleted + "]";
-    }
-
-
 }

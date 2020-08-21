@@ -1,85 +1,123 @@
 package com.winds.bm.common.aspect;
 
-import com.winds.bm.common.annotation.LogAnnotation;
+import com.alibaba.fastjson.JSONObject;
+import com.winds.bm.common.base.MySysUser;
+import com.winds.bm.common.exception.GlobalExceptionHandler;
 import com.winds.bm.entity.Log;
-import com.winds.bm.service.LogService;
-import com.winds.common.util.HttpContextUtils;
+import com.winds.common.util.AjaxUtils;
 import com.winds.common.util.IpUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.lang.reflect.Method;
-import java.util.Date;
+import java.util.Map;
 
 @Aspect
 @Component
 public class LogAspect {
 
+    private ThreadLocal<Long> startTime = new ThreadLocal<>();
+
     @Autowired
-    private LogService logService;
+    private GlobalExceptionHandler exceptionHandle;
+
+    private Log sysLog = null;
 
     @Pointcut("@annotation(com.winds.bm.common.annotation.LogAnnotation)")
     public void logPointCut() {
     }
 
-    @Around("logPointCut()")
-    public Object around(ProceedingJoinPoint point) throws Throwable {
-        long beginTime = System.currentTimeMillis();
-        //执行方法
-        Object result = point.proceed();
-        //执行时长(毫秒)
-        long time = System.currentTimeMillis() - beginTime;
-        //保存日志
-        saveLog(point, time);
-        return result;
-    }
-
-    private void saveLog(ProceedingJoinPoint joinPoint, long time) {
+    @Before("logPointCut()")
+    public void doBefore(JoinPoint joinPoint) {
+        startTime.set(System.currentTimeMillis());
+        // 接收到请求，记录请求内容
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = attributes.getRequest();
+        HttpSession session = (HttpSession) attributes.resolveReference(RequestAttributes.REFERENCE_SESSION);
+        sysLog = new Log();
+        sysLog.setClassMethod(joinPoint.getSignature().getDeclaringTypeName() + "." + joinPoint.getSignature().getName());
+        sysLog.setHttpMethod(request.getMethod());
+        //获取传入目标方法的参数
+        Object[] args = joinPoint.getArgs();
+        for (int i = 0; i < args.length; i++) {
+            Object o = args[i];
+            if(o instanceof ServletRequest || (o instanceof ServletResponse) || o instanceof MultipartFile){
+                args[i] = o.toString();
+            }
+        }
+        String str = JSONObject.toJSONString(args);
+        sysLog.setParams(str.length()>5000?JSONObject.toJSONString("请求参数数据过长不与显示"):str);
+        String ip = IpUtils.getIpAddr(request);
+        if("0.0.0.0".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip) || "localhost".equals(ip) || "127.0.0.1".equals(ip)){
+            ip = "127.0.0.1";
+        }
+        sysLog.setRemoteAddr(ip);
+        sysLog.setRequestUri(request.getRequestURL().toString());
+        if(session != null){
+            sysLog.setSessionId(session.getId());
+        }
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
-        Log log = new Log();
-        LogAnnotation logAnnotation = method.getAnnotation(LogAnnotation.class);
-
-        if (log != null) {
-            log.setModule(logAnnotation.module());
-            log.setOperation(logAnnotation.operation());
+        com.winds.bm.common.annotation.LogAnnotation mylog = method.getAnnotation( com.winds.bm.common.annotation.LogAnnotation.class);
+        if(mylog != null){
+            //注解上的描述
+            sysLog.setTitle(mylog.module());
         }
 
-        //请求的方法名
-        String className = joinPoint.getTarget().getClass().getName();
-        String methodName = signature.getName();
-        log.setMethod(className + "." + methodName + "()");
+        Map<String,String> browserMap = IpUtils.getOsAndBrowserInfo(request);
+        sysLog.setBrowser(browserMap.get("os")+"-"+browserMap.get("browser"));
 
-//        //请求的参数
-//        Object[] args = joinPoint.getArgs();
-//        String params = JSON.toJSONString(args[0]);
-//        log.setParams(params);
+        if(!"127.0.0.1".equals(ip)){
+            Map<String,String> map = (Map<String,String>)session.getAttribute("addressIp");
+            if(map == null){
+                map = IpUtils.getAddressByIP(IpUtils.getIpAddr(request));
+                session.setAttribute("addressIp",map);
+            }
+            sysLog.setArea(map.get("area"));
+            sysLog.setProvince(map.get("province"));
+            sysLog.setCity(map.get("city"));
+            sysLog.setIsp(map.get("isp"));
+        }
+        sysLog.setType(AjaxUtils.isAjax(request)?"Ajax请求":"普通请求");
+        if(MySysUser.ShiroUser() != null) {
+            sysLog.setUsername(StringUtils.isNotBlank(MySysUser.nickName()) ? MySysUser.nickName() : MySysUser.loginName());
+        }
+    }
 
-        //获取request 设置IP地址
-        HttpServletRequest request = HttpContextUtils.getHttpServletRequest();
-        log.setIp(IpUtils.getIpAddr(request));
+    @Around("logPointCut()")
+    public Object doAround(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+        try {
+            Object obj = proceedingJoinPoint.proceed();
+            return obj;
+        } catch (Exception e) {
+            e.printStackTrace();
+            sysLog.setException(e.getMessage());
+            throw e;
+        }
+    }
 
-//        //用户名
-//        User user = UserUtils.getCurrentUser();
-//
-//        if (null != user) {
-//            log.setUserId(user.getId());
-//            log.setNickname(user.getNickname());
-//        } else {
-//            log.setUserId(-1L);
-//            log.setNickname("获取用户信息为空");
-//        }
-
-        log.setTime(time);
-        log.setCreateDate(new Date());
-
-        logService.saveLog(log);
+    @AfterReturning(returning = "ret", pointcut = "logPointCut()")
+    public void doAfterReturning(Object ret) {
+        if(MySysUser.ShiroUser() != null) {
+            sysLog.setUsername(StringUtils.isNotBlank(MySysUser.nickName()) ? MySysUser.nickName() : MySysUser.loginName());
+        }
+        String retString = JSONObject.toJSONString(ret);
+        sysLog.setResponse(retString.length()>5000?JSONObject.toJSONString("请求参数数据过长不与显示"):retString);
+        sysLog.setUseTime(System.currentTimeMillis() - startTime.get());
+        sysLog.insert();
     }
 
 }

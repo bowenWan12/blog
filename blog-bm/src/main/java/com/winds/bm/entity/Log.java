@@ -1,84 +1,152 @@
 package com.winds.bm.entity;
 
-import com.winds.bm.common.entity.BaseEntity;
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+import com.winds.bm.common.base.DataEntity;
 
-import javax.persistence.*;
-import java.util.Date;
+/**
+ * <p>
+ * 系统日志
+ * </p>
+ *
+ * @author wangl
+ * @since 2018-01-13
+ */
+@TableName("sys_log")
+public class Log extends DataEntity<Log> {
 
-@Entity
-@Table(name = "sys_log")
-public class Log extends BaseEntity<Integer> {
+    private static final long serialVersionUID = 1L;
 
-    @Column(name = "userid")
-    private Long userId;
-
-    @Column(name = "nickname", length = 10)
-    private String nickname;
-
-    @Column(name = "module", length = 10)
-    private String module;
-
-    @Column(name = "operation", length = 25)
-    private String operation;
-
-    @Column(name = "method", length = 100)
-    private String method;
-
-    @Column(name = "params")
+    /**
+     * 请求类型
+     */
+    private String type;
+    /**
+     * 日志标题
+     */
+    private String title;
+    /**
+     * 操作IP地址
+     */
+    @TableField("remote_addr")
+    private String remoteAddr;
+    /**
+     * 操作用户昵称
+     */
+    private String username;
+    /**
+     * 请求URI
+     */
+    @TableField("request_uri")
+    private String requestUri;
+    /**
+     * 操作方式
+     */
+    @TableField("http_method")
+    private String httpMethod;
+    /**
+     * 请求类型.方法
+     */
+    @TableField("class_method")
+    private String classMethod;
+    /**
+     * 操作提交的数据
+     */
     private String params;
+    /**
+     * sessionId
+     */
+    @TableField("session_id")
+    private String sessionId;
+    /**
+     * 返回内容
+     */
+    private String response;
+    /**
+     * 方法执行时间
+     */
+    @TableField("use_time")
+    private Long useTime;
+    /**
+     * 浏览器信息
+     */
+    private String browser;
+    /**
+     * 地区
+     */
+    private String area;
+    /**
+     * 省
+     */
+    private String province;
+    /**
+     * 市
+     */
+    private String city;
+    /**
+     * 网络服务提供商
+     */
+    private String isp;
+    /**
+     * 异常信息
+     */
+    private String exception;
 
-    @Column(name = "time")
-    private Long time;
 
-    @Column(name = "ip", length = 15)
-    private String ip;
-
-    @Column(name = "create_date")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createDate;
-
-    public Log() {
-        super();
+    public String getType() {
+        return type;
     }
 
-    public Long getUserId() {
-        return userId;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public String getTitle() {
+        return title;
     }
 
-    public String getNickname() {
-        return nickname;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
+    public String getRemoteAddr() {
+        return remoteAddr;
     }
 
-    public String getModule() {
-        return module;
+    public void setRemoteAddr(String remoteAddr) {
+        this.remoteAddr = remoteAddr;
     }
 
-    public void setModule(String module) {
-        this.module = module;
+    public String getUsername() {
+        return username;
     }
 
-    public String getOperation() {
-        return operation;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public void setOperation(String operation) {
-        this.operation = operation;
+    public String getRequestUri() {
+        return requestUri;
     }
 
-    public String getMethod() {
-        return method;
+    public void setRequestUri(String requestUri) {
+        this.requestUri = requestUri;
     }
 
-    public void setMethod(String method) {
-        this.method = method;
+    public String getHttpMethod() {
+        return httpMethod;
+    }
+
+    public void setHttpMethod(String httpMethod) {
+        this.httpMethod = httpMethod;
+    }
+
+    public String getClassMethod() {
+        return classMethod;
+    }
+
+    public void setClassMethod(String classMethod) {
+        this.classMethod = classMethod;
     }
 
     public String getParams() {
@@ -89,27 +157,99 @@ public class Log extends BaseEntity<Integer> {
         this.params = params;
     }
 
-    public Long getTime() {
-        return time;
+    public String getSessionId() {
+        return sessionId;
     }
 
-    public void setTime(Long time) {
-        this.time = time;
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 
-    public String getIp() {
-        return ip;
+    public String getResponse() {
+        return response;
     }
 
-    public void setIp(String ip) {
-        this.ip = ip;
+    public void setResponse(String response) {
+        this.response = response;
     }
 
-    public Date getCreateDate() {
-        return createDate;
+    public Long getUseTime() {
+        return useTime;
     }
 
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
+    public void setUseTime(Long useTime) {
+        this.useTime = useTime;
+    }
+
+    public String getBrowser() {
+        return browser;
+    }
+
+    public void setBrowser(String browser) {
+        this.browser = browser;
+    }
+
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
+    }
+
+    public String getProvince() {
+        return province;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getIsp() {
+        return isp;
+    }
+
+    public void setIsp(String isp) {
+        this.isp = isp;
+    }
+
+    public String getException() {
+        return exception;
+    }
+
+    public void setException(String exception) {
+        this.exception = exception;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Log{" +
+                ", type=" + type +
+                ", title=" + title +
+                ", remoteAddr=" + remoteAddr +
+                ", username=" + username +
+                ", requestUri=" + requestUri +
+                ", httpMethod=" + httpMethod +
+                ", classMethod=" + classMethod +
+                ", params=" + params +
+                ", sessionId=" + sessionId +
+                ", response=" + response +
+                ", useTime=" + useTime +
+                ", browser=" + browser +
+                ", area=" + area +
+                ", province=" + province +
+                ", city=" + city +
+                ", isp=" + isp +
+                ", exception=" + exception +
+                "}";
     }
 }

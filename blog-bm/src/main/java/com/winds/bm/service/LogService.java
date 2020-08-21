@@ -1,9 +1,20 @@
 package com.winds.bm.service;
 
-
+import com.baomidou.mybatisplus.service.IService;
 import com.winds.bm.entity.Log;
 
-public interface LogService {
+import java.util.List;
 
-    Integer saveLog(Log log);
+/**
+ * <p>
+ * 系统日志 服务类
+ * </p>
+ *
+ * @author wangl
+ * @since 2018-01-13
+ */
+public interface LogService extends IService<Log> {
+
+    public List<Integer> selectSelfMonthData();
+
 }

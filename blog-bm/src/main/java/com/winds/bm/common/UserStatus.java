@@ -1,4 +1,4 @@
-package com.winds.bm.entity;
+package com.winds.bm.common;
 
 /**
  * 用户状态
