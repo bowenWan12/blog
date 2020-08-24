@@ -19,25 +19,21 @@ import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 
 
-@Controller
+@RestController
 public class LoginController extends BaseController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(com.winds.bm.controller.LoginController.class);
 
@@ -45,19 +41,20 @@ public class LoginController extends BaseController {
 	private String port;
 
 	@GetMapping("login")
-	public String login(HttpServletRequest request) {
+	public Result login(HttpServletRequest request) {
 		LOGGER.info("跳到这边的路径为:"+request.getRequestURI());
 		Subject s = SecurityUtils.getSubject();
 		LOGGER.info("是否记住登录--->"+s.isRemembered()+"<-----是否有权限登录----->"+s.isAuthenticated()+"<----");
 		if(s.isAuthenticated()){
-			return "redirect:index";
+			LOGGER.info("-----------有权限-----------");
+			return Result.success();
 		}else {
-			return "login";
+			LOGGER.info("-----------无权限-----------");
+			return Result.error(ResultCode.PERMISSION_NO_ACCESS);
 		}
 	}
 	
 	@PostMapping("login/main")
-	@ResponseBody
 	@LogAnnotation(module = "用户登录", operation = "用户登录")
 	public Result loginMain(HttpServletRequest request) {
 		String username = request.getParameter("username");
@@ -126,8 +123,8 @@ public class LoginController extends BaseController {
 	/**
 	 * 获取验证码图片和文本(验证码文本会保存在HttpSession中)
 	 */
-	@GetMapping("/genCaptcha")
-	public Result genCaptcha(HttpServletRequest request) throws IOException {
+	@GetMapping("genCaptcha")
+	public @ResponseBody Result genCaptcha(HttpServletRequest request) throws IOException {
 		//设置页面不缓存
 //		response.setHeader("Pragma", "no-cache");
 //		response.setHeader("Cache-Control", "no-cache");
@@ -144,7 +141,7 @@ public class LoginController extends BaseController {
 		return Result.success(verifyCode);
 	}
 
-	@GetMapping("/main")
+	@GetMapping("main")
 	public String main(Model model){
 		Map map = userService.selectUserMenuCount();
 		User user = userService.findUserById(MySysUser.id());
