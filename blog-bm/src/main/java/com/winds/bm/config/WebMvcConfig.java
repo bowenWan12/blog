@@ -6,6 +6,7 @@ import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -29,12 +30,21 @@ public class WebMvcConfig implements WebMvcConfigurer {
         WebMvcConfigurer.super.addResourceHandlers(registry);
     }
 
-//    @Bean
+    //    @Bean
 //    public ClearTokenInteceptor clearTokenInteceptor() {
 //        ClearTokenInteceptor clearTokenInteceptor = new ClearTokenInteceptor();
 //        return clearTokenInteceptor;
 //    }
-
+    //配置跨域
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")     //允许的路径
+                .allowedMethods("*")     //允许的方法
+                .allowedOrigins("*")       //允许的网站
+                .allowedHeaders("*")     //允许的请求头
+                .allowCredentials(true)
+                .maxAge(3600);
+    }
 
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {

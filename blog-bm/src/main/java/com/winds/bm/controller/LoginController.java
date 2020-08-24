@@ -127,23 +127,24 @@ public class LoginController extends BaseController {
 	 * 获取验证码图片和文本(验证码文本会保存在HttpSession中)
 	 */
 	@GetMapping("/genCaptcha")
-	public void genCaptcha(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public Result genCaptcha(HttpServletRequest request) throws IOException {
 		//设置页面不缓存
-		response.setHeader("Pragma", "no-cache");
-		response.setHeader("Cache-Control", "no-cache");
-		response.setDateHeader("Expires", 0);
+//		response.setHeader("Pragma", "no-cache");
+//		response.setHeader("Cache-Control", "no-cache");
+//		response.setDateHeader("Expires", 0);
 		String verifyCode = VerifyCodeUtil.generateTextCode(VerifyCodeUtil.TYPE_ALL_MIXED, 4, null);
 		//将验证码放到HttpSession里面
 		request.getSession().setAttribute(Constants.VALIDATE_CODE, verifyCode);
 		LOGGER.info("本次生成的验证码为[" + verifyCode + "],已存放到HttpSession中");
 		//设置输出的内容的类型为JPEG图像
-		response.setContentType("image/jpeg");
-		BufferedImage bufferedImage = VerifyCodeUtil.generateImageCode(verifyCode, 116, 36, 5, true, new Color(249,205,173), null, null);
+//		response.setContentType("image/jpeg");
+//		BufferedImage bufferedImage = VerifyCodeUtil.generateImageCode(verifyCode, 116, 36, 5, true, new Color(249,205,173), null, null);
 		//写给浏览器
-		ImageIO.write(bufferedImage, "JPEG", response.getOutputStream());
+//		ImageIO.write(bufferedImage, "JPEG", response.getOutputStream());
+		return Result.success(verifyCode);
 	}
 
-	@GetMapping("main")
+	@GetMapping("/main")
 	public String main(Model model){
 		Map map = userService.selectUserMenuCount();
 		User user = userService.findUserById(MySysUser.id());
@@ -162,6 +163,7 @@ public class LoginController extends BaseController {
 		}
 		showMenus.sort(new com.winds.bm.controller.MenuComparator());
 		model.addAttribute("userMenu",showMenus);
+		System.out.println(showMenus);
 		return "main";
 	}
 
