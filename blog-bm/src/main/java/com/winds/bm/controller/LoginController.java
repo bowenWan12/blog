@@ -5,8 +5,10 @@ import com.google.common.collect.Maps;
 import com.winds.bm.common.annotation.LogAnnotation;
 import com.winds.bm.common.base.BaseController;
 import com.winds.bm.common.base.MySysUser;
+import com.winds.bm.dto.LoginUser;
 import com.winds.bm.entity.Menu;
 import com.winds.bm.entity.User;
+import com.winds.bm.oauth.OAuthSessionManager;
 import com.winds.bm.util.Constants;
 import com.winds.common.constant.Result;
 import com.winds.common.constant.ResultCode;
@@ -20,10 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -35,61 +34,68 @@ import java.util.Set;
 
 @RestController
 public class LoginController extends BaseController {
-	private static final Logger LOGGER = LoggerFactory.getLogger(com.winds.bm.controller.LoginController.class);
+	private static final Logger logger = LoggerFactory.getLogger(com.winds.bm.controller.LoginController.class);
 
 	@Value("${server.port}")
 	private String port;
 
 	@GetMapping("login")
 	public Result login(HttpServletRequest request) {
-		LOGGER.info("跳到这边的路径为:"+request.getRequestURI());
+		logger.info("跳到这边的路径为:"+request.getRequestURI());
 		Subject s = SecurityUtils.getSubject();
-		LOGGER.info("是否记住登录--->"+s.isRemembered()+"<-----是否有权限登录----->"+s.isAuthenticated()+"<----");
+		logger.info("是否记住登录--->"+s.isRemembered()+"<-----是否有权限登录----->"+s.isAuthenticated()+"<----");
 		if(s.isAuthenticated()){
-			LOGGER.info("-----------有权限-----------");
+			logger.info("-----------有权限-----------");
 			return Result.success();
 		}else {
-			LOGGER.info("-----------无权限-----------");
+			logger.info("-----------无权限-----------");
 			return Result.error(ResultCode.PERMISSION_NO_ACCESS);
 		}
 	}
 	
 	@PostMapping("login/main")
 	@LogAnnotation(module = "用户登录", operation = "用户登录")
-	public Result loginMain(HttpServletRequest request) {
-		String username = request.getParameter("username");
-		String password = request.getParameter("password");
-		String rememberMe = request.getParameter("rememberMe");
-		String code = request.getParameter("code");
+	public Result loginMain(HttpServletRequest request, @RequestBody LoginUser loginUser) {
+		String username = loginUser.getUsername();
+		String password = loginUser.getPassword();
+		String rememberMe = loginUser.getRememberMe();
+		String verifycode = loginUser.getVerifycode();
+		logger.info(username+"_"+password+"_"+verifycode+"_"+rememberMe);
+		Result r = new Result();
 		if(StringUtils.isBlank(username) || StringUtils.isBlank(password)){
-			return Result.error(ResultCode.PARAM_IS_BLANK,"用户名或者密码不能为空");
+			return r.error(ResultCode.PARAM_IS_BLANK,"用户名或者密码不能为空");
 		}
 		if(StringUtils.isBlank(rememberMe)){
-			return Result.error(ResultCode.PARAM_IS_BLANK,"记住我不能为空");
+			rememberMe = "false";
+//			return Result.error(ResultCode.PARAM_IS_BLANK,"记住我不能为空");
 		}
-		if(StringUtils.isBlank(code)){
-			return  Result.error(ResultCode.PARAM_IS_BLANK,"验证码不能为空");
+		if(StringUtils.isBlank(verifycode)){
+			return  r.error(ResultCode.PARAM_IS_BLANK,"验证码不能为空");
 		}
 		Map<String,Object> map = Maps.newHashMap();
 		String error = null;
 		HttpSession session = request.getSession();
 		if(session == null){
-			return Result.error(ResultCode.SESSION_TIME_OUT,"session超时");
+			return r.error(ResultCode.SESSION_TIME_OUT,"session超时");
 		}
+		System.out.println("------------------------------------"+session.getId());
 		String trueCode =  (String)session.getAttribute(Constants.VALIDATE_CODE);
 		if(StringUtils.isBlank(trueCode)){
-			return Result.error(ResultCode.INTERFACE_REQUEST_TIMEOUT,"验证码超时");
+			return r.error(ResultCode.INTERFACE_REQUEST_TIMEOUT,"验证码超时");
 		}
-		if(StringUtils.isBlank(code) || !trueCode.toLowerCase().equals(code.toLowerCase())){
+		if(StringUtils.isBlank(verifycode) || !trueCode.toLowerCase().equals(verifycode.toLowerCase())){
 			error = "验证码错误";
 		}else {
 			/*就是代表当前的用户。*/
 			Subject user = SecurityUtils.getSubject();
 			UsernamePasswordToken token = new UsernamePasswordToken(username,password,Boolean.valueOf(rememberMe));
+
 			try {
 				user.login(token);
 				if (user.isAuthenticated()) {
-					map.put("url","index");
+//					map.put("url","index");
+//					r.simple().put("url","index");
+					r.simple().put(OAuthSessionManager.OAUTH_TOKEN, user.getSession().getId());
 				}
 			}catch (IncorrectCredentialsException e) {
 				error = "登录密码错误.";
@@ -108,9 +114,11 @@ public class LoginController extends BaseController {
 			}
 		}
 		if(StringUtils.isBlank(error)){
-			return Result.success(map);
+			r.setResultCode(ResultCode.SUCCESS);
+
+			return r;
 		}else{
-			return Result.error(ResultCode.ERROR, error);
+			return r.error(ResultCode.ERROR, error);
 		}
 	}
 	
@@ -132,7 +140,8 @@ public class LoginController extends BaseController {
 		String verifyCode = VerifyCodeUtil.generateTextCode(VerifyCodeUtil.TYPE_ALL_MIXED, 4, null);
 		//将验证码放到HttpSession里面
 		request.getSession().setAttribute(Constants.VALIDATE_CODE, verifyCode);
-		LOGGER.info("本次生成的验证码为[" + verifyCode + "],已存放到HttpSession中");
+		System.out.println("------------------------------------"+request.getSession().getId());
+		logger.info("本次生成的验证码为[" + verifyCode + "],已存放到HttpSession中");
 		//设置输出的内容的类型为JPEG图像
 //		response.setContentType("image/jpeg");
 //		BufferedImage bufferedImage = VerifyCodeUtil.generateImageCode(verifyCode, 116, 36, 5, true, new Color(249,205,173), null, null);
@@ -142,26 +151,28 @@ public class LoginController extends BaseController {
 	}
 
 	@GetMapping("main")
-	public String main(Model model){
+	public Result main(Model model){
+		System.out.println("获取当前用户菜单树");
 		Map map = userService.selectUserMenuCount();
 		User user = userService.findUserById(MySysUser.id());
-		Set<Menu> menus = user.getMenus();
-		java.util.List<Menu> showMenus = Lists.newArrayList();
-		if(menus != null && menus.size()>0){
-			for (Menu menu : menus){
-				if(StringUtils.isNotBlank(menu.getHref())){
-					Long result = (Long)map.get(menu.getPermission());
-					if(result != null){
-						menu.setDataCount(result.intValue());
-						showMenus.add(menu);
-					}
-				}
-			}
-		}
-		showMenus.sort(new com.winds.bm.controller.MenuComparator());
-		model.addAttribute("userMenu",showMenus);
-		System.out.println(showMenus);
-		return "main";
+//		Set<Menu> menus = user.getMenus();
+//		java.util.List<Menu> showMenus = Lists.newArrayList();
+//		if(menus != null && menus.size()>0){
+//			for (Menu menu : menus){
+//				if(StringUtils.isNotBlank(menu.getHref())){
+//					Long result = (Long)map.get(menu.getPermission());
+//					if(result != null){
+//						menu.setDataCount(result.intValue());
+//						showMenus.add(menu);
+//					}
+//				}
+//			}
+//		}
+//		showMenus.sort(new com.winds.bm.controller.MenuComparator());
+//		model.addAttribute("userMenu",showMenus);
+//		System.out.println(showMenus);
+
+		return Result.success();
 	}
 
 	/**
@@ -170,7 +181,7 @@ public class LoginController extends BaseController {
 	 */
 	@GetMapping(value = "")
 	public String index() {
-		LOGGER.info("这事空地址在请求路径");
+		logger.info("这事空地址在请求路径");
 		Subject s = SecurityUtils.getSubject();
 		return s.isAuthenticated() ? "redirect:index" : "login";
 	}

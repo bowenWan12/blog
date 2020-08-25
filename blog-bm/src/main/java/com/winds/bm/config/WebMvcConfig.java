@@ -5,6 +5,7 @@ import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.alibaba.fastjson.support.spring.FastJsonViewResponseBodyAdvice;
 import com.winds.bm.common.interceptor.ClearTokenInteceptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -21,10 +22,14 @@ import java.util.List;
 public class WebMvcConfig implements WebMvcConfigurer {
 
 
+    @Autowired
+    private CorsFilter corsFilter;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
 
         registry.addInterceptor(clearTokenInteceptor()).addPathPatterns("/**");
+        registry.addInterceptor(corsFilter).addPathPatterns("/**");
     }
 
     @Bean
