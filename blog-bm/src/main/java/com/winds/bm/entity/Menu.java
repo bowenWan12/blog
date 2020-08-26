@@ -113,4 +113,18 @@ public class Menu extends TreeEntity<com.winds.bm.entity.Menu> {
 	public void setDataCount(Integer dataCount) {
 		this.dataCount = dataCount;
 	}
+
+	@Override
+	public String toString() {
+		return "Menu{" +
+				"name='" + name + '\'' +
+				", icon='" + icon + '\'' +
+				", href='" + href + '\'' +
+				", target='" + target + '\'' +
+				", isShow=" + isShow +
+				", bgColor='" + bgColor + '\'' +
+				", permission='" + permission + '\'' +
+				", dataCount=" + dataCount +
+				'}';
+	}
 }

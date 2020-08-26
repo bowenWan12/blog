@@ -141,4 +141,20 @@ public class User extends DataEntity<User> {
     public void setMenus(Set<Menu> menus) {
         this.menus = menus;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "loginName='" + loginName + '\'' +
+                ", nickName='" + nickName + '\'' +
+                ", password='" + password + '\'' +
+                ", salt='" + salt + '\'' +
+                ", tel='" + tel + '\'' +
+                ", email='" + email + '\'' +
+                ", locked=" + locked +
+                ", icon='" + icon + '\'' +
+                ", roleLists=" + roleLists +
+                ", menus=" + menus +
+                '}';
+    }
 }

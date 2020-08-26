@@ -2,7 +2,7 @@ package com.winds.bm.common.aspect;
 
 import com.alibaba.fastjson.JSONObject;
 import com.winds.bm.common.base.MySysUser;
-import com.winds.bm.common.exception.GlobalExceptionHandler;
+import com.winds.bm.common.controlleradvice.GlobalExceptionHandler;
 import com.winds.bm.entity.Log;
 import com.winds.common.util.AjaxUtils;
 import com.winds.common.util.IpUtils;

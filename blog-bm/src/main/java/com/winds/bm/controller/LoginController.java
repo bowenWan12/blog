@@ -27,9 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 @RestController
@@ -96,6 +94,7 @@ public class LoginController extends BaseController {
 //					map.put("url","index");
 //					r.simple().put("url","index");
 					r.simple().put(OAuthSessionManager.OAUTH_TOKEN, user.getSession().getId());
+					r.simple().put("menu", getMenu());
 				}
 			}catch (IncorrectCredentialsException e) {
 				error = "登录密码错误.";
@@ -140,8 +139,7 @@ public class LoginController extends BaseController {
 		String verifyCode = VerifyCodeUtil.generateTextCode(VerifyCodeUtil.TYPE_ALL_MIXED, 4, null);
 		//将验证码放到HttpSession里面
 		request.getSession().setAttribute(Constants.VALIDATE_CODE, verifyCode);
-		System.out.println("------------------------------------"+request.getSession().getId());
-		logger.info("本次生成的验证码为[" + verifyCode + "],已存放到HttpSession中");
+		logger.info("本次生成的验证码为[" + verifyCode + "],已存放到HttpSession["+request.getSession().getId()+"]中");
 		//设置输出的内容的类型为JPEG图像
 //		response.setContentType("image/jpeg");
 //		BufferedImage bufferedImage = VerifyCodeUtil.generateImageCode(verifyCode, 116, 36, 5, true, new Color(249,205,173), null, null);
@@ -150,29 +148,37 @@ public class LoginController extends BaseController {
 		return Result.success(verifyCode);
 	}
 
-	@GetMapping("main")
-	public Result main(Model model){
-		System.out.println("获取当前用户菜单树");
+	private List getMenu(){
+		System.out.println("获取当前用户["+MySysUser.loginName()+"]菜单树");
 		Map map = userService.selectUserMenuCount();
+		System.out.println("================================"+map);
 		User user = userService.findUserById(MySysUser.id());
-//		Set<Menu> menus = user.getMenus();
-//		java.util.List<Menu> showMenus = Lists.newArrayList();
-//		if(menus != null && menus.size()>0){
-//			for (Menu menu : menus){
-//				if(StringUtils.isNotBlank(menu.getHref())){
-//					Long result = (Long)map.get(menu.getPermission());
-//					if(result != null){
-//						menu.setDataCount(result.intValue());
-//						showMenus.add(menu);
-//					}
-//				}
-//			}
-//		}
-//		showMenus.sort(new com.winds.bm.controller.MenuComparator());
-//		model.addAttribute("userMenu",showMenus);
-//		System.out.println(showMenus);
+		System.out.println("--------------------------"+user.getLoginName()+"---"+user.getMenus().toString());
+		Set<Menu> menus = user.getMenus();
+		List<Menu> showMenus = Lists.newArrayList();
+		if(menus != null && menus.size()>0){
+			for (Menu menu : menus){
+				if(StringUtils.isNotBlank(menu.getHref())){
+					Long result = (Long)map.get(menu.getPermission());
+					if(result != null){
+						menu.setDataCount(result.intValue());
+						showMenus.add(menu);
+					}
+				}
+			}
+		}
+		showMenus.sort(new com.winds.bm.controller.MenuComparator());
+		System.out.println("==================================================================================");
+		System.out.println(showMenus);
+		/*List<Menu> showMenus = Lists.newArrayList();
+		Menu m = new Menu();
 
-		return Result.success();
+		m.setTarget("");
+		m.setName("home");
+		showMenus.add()*/
+
+
+		return showMenus;
 	}
 
 	/**

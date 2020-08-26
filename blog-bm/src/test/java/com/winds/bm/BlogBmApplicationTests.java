@@ -1,5 +1,6 @@
 package com.winds.bm;
 
+import com.winds.bm.entity.User;
 import com.winds.bm.service.UserService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +16,8 @@ public class BlogBmApplicationTests {
     private UserService userService;
     @Test
     public void testDao(){
-        System.out.println(userService.findUserById(1L));
+        User userById = userService.findUserById(1L);
+        System.out.println(userById);
     }
     @Test
     public void contextLoads() {

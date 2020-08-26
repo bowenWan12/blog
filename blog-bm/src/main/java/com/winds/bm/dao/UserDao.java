@@ -24,5 +24,5 @@ public interface UserDao extends BaseMapper<User> {
 
 	void dropUserRolesByUserId(@Param("userId")Long userId);
 
-	Map selectUserMenuCount();
+	Map<String, Long> selectUserMenuCount();
 }

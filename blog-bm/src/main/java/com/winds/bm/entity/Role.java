@@ -54,4 +54,13 @@ public class Role extends DataEntity<Role> {
 	public void setUserSet(Set<User> userSet) {
 		this.userSet = userSet;
 	}
+
+	@Override
+	public String toString() {
+		return "Role{" +
+				"name='" + name + '\'' +
+				", menuSet=" + menuSet +
+				", userSet=" + userSet +
+				'}';
+	}
 }

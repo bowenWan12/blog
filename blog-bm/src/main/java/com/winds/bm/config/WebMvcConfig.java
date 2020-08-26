@@ -10,11 +10,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,30 +42,52 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-
-        FastJsonHttpMessageConverter fastConverter = new FastJsonHttpMessageConverter();
-
+        WebMvcConfigurer.super.configureMessageConverters(converters);
+        List<MediaType> supportedMediaTypes = new ArrayList<>();
+        supportedMediaTypes.add(MediaType.APPLICATION_JSON_UTF8);
+        FastJsonHttpMessageConverter fastJsonHttpMessageConverter = new FastJsonHttpMessageConverter();
+        fastJsonHttpMessageConverter.setSupportedMediaTypes(supportedMediaTypes);
         FastJsonConfig fastJsonConfig = new FastJsonConfig();
-
-        fastJsonConfig.setSerializerFeatures(
-                SerializerFeature.PrettyFormat, SerializerFeature.WriteNullStringAsEmpty,
-                SerializerFeature.DisableCircularReferenceDetect
-        );
-
-
-        List<MediaType> fastMediaTypes = new ArrayList<>();
-        fastMediaTypes.add(MediaType.APPLICATION_JSON_UTF8);
-
-        fastConverter.setFastJsonConfig(fastJsonConfig);
-        fastConverter.setSupportedMediaTypes(fastMediaTypes);
-
-        converters.add(fastConverter);
+        fastJsonConfig.setDateFormat("yyyy-MM-dd HH:mm:ss");    // 自定义时间格式
+        fastJsonConfig.setSerializerFeatures(SerializerFeature.PrettyFormat,SerializerFeature.DisableCircularReferenceDetect,
+                SerializerFeature.WriteNullNumberAsZero,SerializerFeature.WriteNullBooleanAsFalse,SerializerFeature.WriteMapNullValue,
+                SerializerFeature.WriteNullStringAsEmpty,SerializerFeature.WriteNullListAsEmpty,SerializerFeature.WriteDateUseDateFormat,
+                SerializerFeature.BrowserCompatible,SerializerFeature.WriteNonStringKeyAsString);
+        converters.add(fastJsonHttpMessageConverter);
+        converters.add(responseBodyConverter());
     }
-
-
     @Bean
-    public FastJsonViewResponseBodyAdvice FastJsonViewResponseBodyAdvice() {
-        FastJsonViewResponseBodyAdvice advice = new FastJsonViewResponseBodyAdvice();
-        return advice;
+    public HttpMessageConverter<String> responseBodyConverter() {
+        StringHttpMessageConverter converter = new StringHttpMessageConverter(
+                Charset.forName("UTF-8"));
+        return converter;
     }
+//    @Override
+//    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+//
+//        FastJsonHttpMessageConverter fastConverter = new FastJsonHttpMessageConverter();
+//
+//        FastJsonConfig fastJsonConfig = new FastJsonConfig();
+//
+//        fastJsonConfig.setSerializerFeatures(
+//                SerializerFeature.PrettyFormat, SerializerFeature.WriteNullStringAsEmpty,
+//                SerializerFeature.DisableCircularReferenceDetect
+//        );
+//
+//
+//        List<MediaType> fastMediaTypes = new ArrayList<>();
+//        fastMediaTypes.add(MediaType.APPLICATION_JSON_UTF8);
+//
+//        fastConverter.setFastJsonConfig(fastJsonConfig);
+//        fastConverter.setSupportedMediaTypes(fastMediaTypes);
+//
+//        converters.add(fastConverter);
+//    }
+
+
+//    @Bean
+//    public FastJsonViewResponseBodyAdvice FastJsonViewResponseBodyAdvice() {
+//        FastJsonViewResponseBodyAdvice advice = new FastJsonViewResponseBodyAdvice();
+//        return advice;
+//    }
 }
