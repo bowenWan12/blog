@@ -21,7 +21,11 @@
         <collection property="menus"  ofType="com.winds.bm.entity.Menu">
             <result property="id" column="menu.id"/>
             <result property="name" column="menu.name"/>
+            <result property="desc" column="menu.desc"/>
             <result property="href" column="menu.href"/>
+            <result property="target" column="menu.target"/>
+            <result property="level" column="menu.level"/>
+            <result property="parentId" column="menu.parentId"/>
             <result property="permission" column="menu.permission"/>
             <result property="bgColor" column="menu.bgColor"/>
             <result property="icon" column="menu.icon"/>
@@ -45,8 +49,12 @@
         r.name			AS	"role.name",
         m.id 			AS 	"menu.id",
         m.name			AS	"menu.name",
+        m.desc			AS	"menu.desc",
         m.permission	AS 	"menu.permission",
         m.href      	AS 	"menu.href",
+        m.target      	AS 	"menu.target",
+        m.level      	AS 	"menu.level",
+        m.parent_id      	AS 	"menu.parentId",
         m.bg_color      AS  "menu.bgColor",
         m.icon          AS  "menu.icon",
         m.sort          AS  "menu.sort",
@@ -87,7 +95,9 @@
         select
         (select count(*) from sys_user where del_flag =false) as "sys_user_list",
         (select count(*) from sys_role where del_flag =false) as "sys_role_list",
-        (select count(*) from sys_menu where del_flag =false) as "sys_menu_list"
+        (select count(*) from sys_menu where del_flag =false) as "sys_menu_list",
+        1 as "sys_home",
+        2 as "sys_other_list"
     </select>
 
 

@@ -6,6 +6,7 @@
     <resultMap type="com.winds.bm.entity.Menu" id="getSelf">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
+        <result property="desc" column="desc"/>
         <result property="parentId" column="parentId"/>
         <result property="level" column="level"/>
         <result property="parentIds" column="parentIds"/>
@@ -30,6 +31,7 @@
         select
         id,
         name,
+        desc,
         parent_id as "parentId",
         parent_ids as "parentIds",
         level,
@@ -67,6 +69,7 @@
         SELECT
         m.id,
         m.name,
+        m.desc,
         m.parent_id    AS "parentId",
         m.parent_ids   AS "parentIds",
         m.sort,

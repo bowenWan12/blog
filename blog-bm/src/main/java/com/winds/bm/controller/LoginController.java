@@ -6,6 +6,7 @@ import com.winds.bm.common.annotation.LogAnnotation;
 import com.winds.bm.common.base.BaseController;
 import com.winds.bm.common.base.MySysUser;
 import com.winds.bm.dto.LoginUser;
+import com.winds.bm.dto.MenuTree;
 import com.winds.bm.entity.Menu;
 import com.winds.bm.entity.User;
 import com.winds.bm.oauth.OAuthSessionManager;
@@ -120,12 +121,6 @@ public class LoginController extends BaseController {
 			return r.error(ResultCode.ERROR, error);
 		}
 	}
-	
-	@GetMapping("index")
-	public String showView(Model model){
-		return "index";
-	}
-
 
 	/**
 	 * 获取验证码图片和文本(验证码文本会保存在HttpSession中)
@@ -150,61 +145,64 @@ public class LoginController extends BaseController {
 
 	private List getMenu(){
 		System.out.println("获取当前用户["+MySysUser.loginName()+"]菜单树");
+		List<MenuTree> menuTree = Lists.newArrayList();
 		Map map = userService.selectUserMenuCount();
 		System.out.println("================================"+map);
 		User user = userService.findUserById(MySysUser.id());
 		System.out.println("--------------------------"+user.getLoginName()+"---"+user.getMenus().toString());
 		Set<Menu> menus = user.getMenus();
-		List<Menu> showMenus = Lists.newArrayList();
+		List<Menu> baseMenu = Lists.newArrayList();
 		if(menus != null && menus.size()>0){
 			for (Menu menu : menus){
 				if(StringUtils.isNotBlank(menu.getHref())){
 					Long result = (Long)map.get(menu.getPermission());
 					if(result != null){
 						menu.setDataCount(result.intValue());
-						showMenus.add(menu);
+						baseMenu.add(menu);
 					}
 				}
 			}
 		}
-		showMenus.sort(new com.winds.bm.controller.MenuComparator());
-		System.out.println("==================================================================================");
-		System.out.println(showMenus);
-		/*List<Menu> showMenus = Lists.newArrayList();
-		Menu m = new Menu();
 
-		m.setTarget("");
-		m.setName("home");
-		showMenus.add()*/
+		baseMenu.sort(new MenuComparator());
+		for (Menu menu: baseMenu) {
+			if (menu.getLevel()==1) {
+				MenuTree mt = new MenuTree();
+				mt.setIcon(menu.getIcon());
+				mt.setLabel(menu.getDesc());
+				mt.setName(menu.getName());
+				mt.setPath(menu.getHref());
+				mt.setUrl(menu.getTarget());
 
+				menuTree.add(mt);
+			} else if (menu.getLevel()==2) {
+				MenuTree mt1 = new MenuTree();
+				mt1.setIcon(menu.getIcon());
+				mt1.setLabel(menu.getDesc());
+				mt1.setName(menu.getName());
+				mt1.setPath(menu.getHref());
+				mt1.setUrl(menu.getTarget());
+				if (menuTree.get(menuTree.size()-1).getChildren() == null){
+					List<MenuTree> mtl = new ArrayList<>();
+					mtl.add(mt1);
+					menuTree.get(menuTree.size()-1).setChildren(mtl);
+				} else {
+					menuTree.get(menuTree.size()-1).getChildren().add(mt1);
+				}
 
-		return showMenus;
+			}
+		}
+
+		return menuTree;
 	}
 
-	/**
-	 *  空地址请求
-	 * @return
-	 */
-	@GetMapping(value = "")
-	public String index() {
-		logger.info("这事空地址在请求路径");
-		Subject s = SecurityUtils.getSubject();
-		return s.isAuthenticated() ? "redirect:index" : "login";
-	}
-
-	@GetMapping("systemLogout")
-	@LogAnnotation(module = "用户登出", operation = "退出系统")
-	public String logOut(){
-		SecurityUtils.getSubject().logout();
-		return "redirect:/login";
-	}
 }
 
 class MenuComparator implements Comparator<Menu> {
 
 	@Override
 	public int compare(Menu o1, Menu o2) {
-		if(o1.getSort()>o2.getSort()){
+		if(o1.getSort()<o2.getSort()){
 			return -1;
 		}else {
 			return 0;

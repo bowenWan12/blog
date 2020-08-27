@@ -15,7 +15,8 @@ public class Menu extends TreeEntity<com.winds.bm.entity.Menu> {
     private static final long serialVersionUID = 1L;
 
     private String name;
-
+    private String desc;
+	private Integer level;
     private String icon;
 	/**
      * 链接地址
@@ -52,6 +53,22 @@ public class Menu extends TreeEntity<com.winds.bm.entity.Menu> {
 		this.name = name;
 	}
 
+	public String getDesc() {
+		return desc;
+	}
+
+	public void setDesc(String desc) {
+		this.desc = desc;
+	}
+
+	public Integer getLevel() {
+		return level;
+	}
+
+	public void setLevel(Integer level) {
+		this.level = level;
+	}
+
 	@Length(min = 0, max = 1000, message = "icon长度必须介于 1 和 1000 之间")
 	public String getIcon() {
 		return icon;
@@ -61,9 +78,9 @@ public class Menu extends TreeEntity<com.winds.bm.entity.Menu> {
 		this.icon = icon;
 	}
 
-	public Long getParentId() {
-		return parentId;
-	}
+//	public Long getParentId() {
+//		return parentId;
+//	}
 
 
 	public String getHref() {
@@ -118,6 +135,8 @@ public class Menu extends TreeEntity<com.winds.bm.entity.Menu> {
 	public String toString() {
 		return "Menu{" +
 				"name='" + name + '\'' +
+				", desc='" + desc + '\'' +
+				", level=" + level +
 				", icon='" + icon + '\'' +
 				", href='" + href + '\'' +
 				", target='" + target + '\'' +
@@ -125,6 +144,21 @@ public class Menu extends TreeEntity<com.winds.bm.entity.Menu> {
 				", bgColor='" + bgColor + '\'' +
 				", permission='" + permission + '\'' +
 				", dataCount=" + dataCount +
+				", parentId=" + parentId +
+				", level=" + level +
+				", parentIds='" + parentIds + '\'' +
+				", sort=" + sort +
+				", children=" + children +
+				", parentTree=" + parentTree +
+				", createId=" + createId +
+				", createDate=" + createDate +
+				", updateId=" + updateId +
+				", updateDate=" + updateDate +
+				", delFlag=" + delFlag +
+				", remarks='" + remarks + '\'' +
+				", createUser=" + createUser +
+				", updateUser=" + updateUser +
+				", id=" + id +
 				'}';
 	}
 }
