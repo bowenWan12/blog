@@ -59,7 +59,7 @@ public class HomeController {
             User u = new User();
             u.setDate(weeks[0]);
             u.setNewly(String.valueOf((int) 10*(Math.random())));
-            u.setNewly(String.valueOf((int) 50*(Math.random())));
+            u.setActive(String.valueOf((int) 50*(Math.random())));
             userList.add(u);
         }
         return userList;
@@ -67,13 +67,19 @@ public class HomeController {
     private Order getOrderData() {
         Order o = new Order();
         o.setDate(mon);
-        List<Map<String,String>> lm = new ArrayList<>();
-        for (int i = 0; i < curse.length; i++) {
+        List<Map<String,String>> llm = new ArrayList();
+        for (int i = 0; i < mon.length; i++) {
+//            List<Map<String,String>> lm = new ArrayList<>();
             Map<String,String> m = new HashMap<>();
-            m.put(curse[i], String.valueOf((int) (Math.random()*10000)));
-            lm.add(m);
+            for (int j = 0; j < curse.length; j++) {
+
+                m.put(curse[j], String.valueOf((int) (Math.random()*10000)));
+//                lm.add(m);
+            }
+            llm.add(m);
         }
-        o.setData(lm);
+
+        o.setData(llm);
         return o;
     }
 
