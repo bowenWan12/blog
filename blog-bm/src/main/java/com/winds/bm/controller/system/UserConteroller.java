@@ -27,46 +27,35 @@ import java.util.Set;
 /**
  *
  */
-@Controller
-@RequestMapping("admin/system/user")
+@RestController
+@RequestMapping("admin/system/user/")
 public class UserConteroller extends BaseController {
 //    private static final Logger LOGGER = LoggerFactory.getLogger(com.mysiteforme.admin.controller.system.UserConteroller.class);
 
-    @GetMapping("list")
+//    @GetMapping("list")
 //    @SysLog("跳转系统用户列表页面")
-    public String list(){
-        return "admin/system/user/list";
-    }
+//    public String list(){
+//        return "admin/system/user/list";
+//    }
 
-    @RequiresPermissions("sys:user:list")
-    @PostMapping("list")
-    @ResponseBody
-    public LayerData<User> list(@RequestParam(value = "page",defaultValue = "1")Integer page,
-                                @RequestParam(value = "limit",defaultValue = "10")Integer limit,
-                                ServletRequest request){
-        Map map = WebUtils.getParametersStartingWith(request, "s_");
-        LayerData<User> userLayerData = new LayerData<>();
+//    @RequiresPermissions("sys_user_list")
+    @GetMapping("getUser")
+    public Result getUser(@RequestParam(value = "page",defaultValue = "1")Integer page,
+                          @RequestParam(value = "limit",defaultValue = "10")Integer limit,
+                          String name){
+        Result r = new Result();
         EntityWrapper<User> userEntityWrapper = new EntityWrapper<>();
-        if(!map.isEmpty()){
-            String keys = (String) map.get("key");
-            if(StringUtils.isNotBlank(keys)) {
-                userEntityWrapper.like("login_name", keys).or().like("tel", keys).or().like("email", keys);
-            }
+        if (StringUtils.isNotBlank(name)){
+            userEntityWrapper.eq("login_name",name).or().like("nick_name", name);
         }
         Page<User> userPage = userService.selectPage(new Page<>(page,limit),userEntityWrapper);
-        userLayerData.setCount(userPage.getTotal());
-        userLayerData.setData(userPage.getRecords());
-        return  userLayerData;
+        r.setResultCode(ResultCode.SUCCESS);
+        //TODO 修改返回信息---userPage.getTotal()、userPage.getRecords()
+        r.setData(userPage);
+        return  r;
     }
 
-    @GetMapping("add")
-    public String add(Model model){
-        List<Role> roleList = roleService.selectAll();
-        model.addAttribute("roleList",roleList);
-        return "admin/system/user/add";
-    }
-
-    @RequiresPermissions("sys:user:add")
+//    @RequiresPermissions("sys_user_add")
     @PostMapping("add")
     @ResponseBody
 //    @SysLog("保存新增系统用户数据")

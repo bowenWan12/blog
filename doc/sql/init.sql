@@ -41,7 +41,7 @@ CREATE TABLE `sys_menu` (
   `parent_ids` varchar(2000) DEFAULT NULL COMMENT '父菜单联集',
   `sort` smallint(6) DEFAULT NULL COMMENT '排序',
   `href` varchar(2000) DEFAULT NULL COMMENT '链接path',
-  `target` varchar(20) DEFAULT NULL COMMENT 'url地址',
+  `target` varchar(64) DEFAULT NULL COMMENT 'url地址',
   `icon` varchar(100) DEFAULT NULL COMMENT '菜单图标',
   `bg_color` varchar(255) DEFAULT NULL COMMENT '显示背景色',
   `is_show` tinyint(2) DEFAULT NULL COMMENT '是否显示',
