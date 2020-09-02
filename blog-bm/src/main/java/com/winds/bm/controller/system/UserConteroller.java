@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.WebUtils;
 
 import javax.servlet.ServletRequest;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,91 +61,118 @@ public class UserConteroller extends BaseController {
     @ResponseBody
 //    @SysLog("保存新增系统用户数据")
     public Result add(@RequestBody User user){
+        System.out.println("----------------------"+user.toString());
+        Result r = new Result();
         if(StringUtils.isBlank(user.getLoginName())){
-            return Result.error(ResultCode.PARAM_IS_BLANK,"登录名不能为空");
+            return r.error(ResultCode.PARAM_IS_BLANK,"登录名不能为空");
         }
         if(user.getRoleLists() == null || user.getRoleLists().size() == 0){
-            return  Result.error(ResultCode.PARAM_TYPE_BIND_ERROR,"用户角色至少选择一个");
+            return  r.error(ResultCode.PARAM_TYPE_BIND_ERROR,"用户角色至少选择一个");
         }
         if(userService.userCount(user.getLoginName())>0){
-            return Result.error(ResultCode.DATA_ALREADY_EXISTED,"登录名称已经存在");
+            return r.error(ResultCode.DATA_ALREADY_EXISTED,"登录名称已经存在");
         }
         if(StringUtils.isNotBlank(user.getEmail())){
             if(userService.userCount(user.getEmail())>0){
-                return Result.error(ResultCode.DATA_ALREADY_EXISTED,"该邮箱已被使用");
+                return r.error(ResultCode.DATA_ALREADY_EXISTED,"该邮箱已被使用");
             }
         }
         if(StringUtils.isNoneBlank(user.getTel())){
             if(userService.userCount(user.getTel())>0){
-                return Result.error(ResultCode.DATA_ALREADY_EXISTED,"该手机号已被绑定");
+                return r.error(ResultCode.DATA_ALREADY_EXISTED,"该手机号已被绑定");
             }
         }
         user.setPassword(Constants.DEFAULT_PASSWORD);
         userService.saveUser(user);
         if(user.getId() == null || user.getId() == 0){
-            return Result.error(ResultCode.ERROR,"保存用户信息出错");
+            return r.error(ResultCode.ERROR,"保存用户信息出错");
+        } else {
+            r.setResultCode(ResultCode.SUCCESS);
         }
-        return Result.success();
+        return r;
     }
 
-    @GetMapping("edit")
-    public String edit(Long id, Model model){
-        User user = userService.findUserById(id);
-        List<Long> roleIdList = Lists.newArrayList();
-        if(user != null) {
-            Set<Role> roleSet = user.getRoleLists();
-            if (roleSet != null && roleSet.size() > 0) {
-                for (Role r : roleSet) {
-                    roleIdList.add(r.getId());
-                }
-            }
-        }
-        List<Role> roleList = roleService.selectAll();
-        model.addAttribute("localuser",user);
-        model.addAttribute("roleIds",roleIdList);
-        model.addAttribute("roleList",roleList);
-        return "admin/system/user/edit";
-    }
+//    @GetMapping("edit")
+//    public String edit(Long id, Model model){
+//        User user = userService.findUserById(id);
+//        List<Long> roleIdList = Lists.newArrayList();
+//        if(user != null) {
+//            Set<Role> roleSet = user.getRoleLists();
+//            if (roleSet != null && roleSet.size() > 0) {
+//                for (Role r : roleSet) {
+//                    roleIdList.add(r.getId());
+//                }
+//            }
+//        }
+//        List<Role> roleList = roleService.selectAll();
+//        model.addAttribute("localuser",user);
+//        model.addAttribute("roleIds",roleIdList);
+//        model.addAttribute("roleList",roleList);
+//        return "admin/system/user/edit";
+//    }
 
-    @RequiresPermissions("sys:user:edit")
+//    @RequiresPermissions("sys:user:edit")
     @PostMapping("edit")
     @ResponseBody
 //    @SysLog("保存系统用户编辑数据")
     public Result edit(@RequestBody User user){
+        System.out.println("============================================================================================== ");
+        System.out.println(user.toString());
+        Result r = new Result();
         if(user.getId() == 0 || user.getId() == null){
-            return Result.error(ResultCode.PARAM_IS_BLANK,"用户ID不能为空");
+            return r.error(ResultCode.PARAM_IS_BLANK,"用户ID不能为空");
         }
         if(StringUtils.isBlank(user.getLoginName())){
-            return Result.error(ResultCode.PARAM_IS_BLANK,"登录名不能为空");
+            return r.error(ResultCode.PARAM_IS_BLANK,"登录名不能为空");
         }
         if(user.getRoleLists() == null || user.getRoleLists().size() == 0){
-            return  Result.error(ResultCode.PARAM_NOT_COMPLETE,"用户角色至少选择一个");
+            return  r.error(ResultCode.PARAM_NOT_COMPLETE,"用户角色至少选择一个");
         }
         User oldUser = userService.findUserById(user.getId());
         if(StringUtils.isNotBlank(user.getEmail())){
             if(!user.getEmail().equals(oldUser.getEmail())){
                 if(userService.userCount(user.getEmail())>0){
-                    return Result.error(ResultCode.DATA_ALREADY_EXISTED,"该邮箱已被使用");
+                    return r.error(ResultCode.DATA_ALREADY_EXISTED,"该邮箱已被使用");
                 }
             }
         }
         if(StringUtils.isNotBlank(user.getLoginName())){
             if(!user.getLoginName().equals(oldUser.getLoginName())) {
                 if (userService.userCount(user.getLoginName()) > 0) {
-                    return Result.error(ResultCode.DATA_ALREADY_EXISTED,"该登录名已存在");
+                    return r.error(ResultCode.DATA_ALREADY_EXISTED,"该登录名已存在");
                 }
             }
         }
         if(StringUtils.isNotBlank(user.getTel())){
             if(!user.getTel().equals(oldUser.getTel())) {
                 if (userService.userCount(user.getTel()) > 0) {
-                    return Result.error(ResultCode.DATA_ALREADY_EXISTED,"该手机号已经被绑定");
+                    return r.error(ResultCode.DATA_ALREADY_EXISTED,"该手机号已经被绑定");
                 }
             }
         }
         user.setIcon(oldUser.getIcon());
         userService.updateUser(user);
-        return Result.success();
+
+        Map<String,Object> m = new HashMap<>();
+        User u = userService.findUserByLoginName(user.getLoginName());
+        List<Map<String,String>> roleIdList = Lists.newArrayList();
+        if(user != null) {
+            Set<Role> roleSet = u.getRoleLists();
+            if (roleSet != null && roleSet.size() > 0) {
+                for (Role rr : roleSet) {
+                    Map<String,String> mm = new HashMap<>();
+                    mm.put("roleId", rr.getId().toString());
+                    mm.put("roleNm", rr.getName());
+
+                    roleIdList.add(mm);
+                }
+            }
+        }
+
+        m.put("userRole", roleIdList);
+        r.setData(m);
+        r.setResultCode(ResultCode.SUCCESS);
+        return r;
     }
 
 //    @RequiresPermissions("sys:user:delete")

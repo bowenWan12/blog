@@ -8,6 +8,7 @@ import com.winds.bm.common.base.MySysUser;
 import com.winds.bm.dto.LoginUser;
 import com.winds.bm.dto.MenuTree;
 import com.winds.bm.entity.Menu;
+import com.winds.bm.entity.Role;
 import com.winds.bm.entity.User;
 import com.winds.bm.oauth.OAuthSessionManager;
 import com.winds.bm.util.Constants;
@@ -92,10 +93,27 @@ public class LoginController extends BaseController {
 			try {
 				user.login(token);
 				if (user.isAuthenticated()) {
-//					map.put("url","index");
-//					r.simple().put("url","index");
-					r.simple().put(OAuthSessionManager.OAUTH_TOKEN, user.getSession().getId());
-					r.simple().put("menu", getMenu());
+				    Map<String,Object> m = new HashMap<>();
+                    m.put(OAuthSessionManager.OAUTH_TOKEN, user.getSession().getId());
+                    m.put("menu", getMenu());
+                    User u = userService.findUserByLoginName(username);
+
+                    List<Map<String,String>> roleIdList = Lists.newArrayList();
+                    if(user != null) {
+                        Set<Role> roleSet = u.getRoleLists();
+                        if (roleSet != null && roleSet.size() > 0) {
+                            for (Role rr : roleSet) {
+                                Map<String,String> mm = new HashMap<>();
+                                mm.put("roleId", rr.getId().toString());
+                                mm.put("roleNm", rr.getName());
+
+                                roleIdList.add(mm);
+                            }
+                        }
+                    }
+
+                    m.put("userRole", roleIdList);
+                    r.setData(m);
 				}
 			}catch (IncorrectCredentialsException e) {
 				error = "登录密码错误.";
@@ -115,7 +133,6 @@ public class LoginController extends BaseController {
 		}
 		if(StringUtils.isBlank(error)){
 			r.setResultCode(ResultCode.SUCCESS);
-
 			return r;
 		}else{
 			return r.error(ResultCode.ERROR, error);
