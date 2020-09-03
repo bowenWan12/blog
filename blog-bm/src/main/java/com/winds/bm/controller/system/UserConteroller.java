@@ -156,7 +156,7 @@ public class UserConteroller extends BaseController {
         Map<String,Object> m = new HashMap<>();
         User u = userService.findUserByLoginName(user.getLoginName());
         List<Map<String,String>> roleIdList = Lists.newArrayList();
-        if(user != null) {
+        if(u != null) {
             Set<Role> roleSet = u.getRoleLists();
             if (roleSet != null && roleSet.size() > 0) {
                 for (Role rr : roleSet) {
@@ -176,21 +176,21 @@ public class UserConteroller extends BaseController {
     }
 
 //    @RequiresPermissions("sys:user:delete")
-//    @PostMapping("delete")
-//    @ResponseBody
+    @PostMapping("delete")
+    @ResponseBody
 //    @SysLog("删除系统用户数据(单个)")
-//    public RestResponse delete(@RequestParam(value = "id",required = false)Long id){
-//        if(id == null || id == 0 || id == 1){
-//            return RestResponse.failure("参数错误");
-//        }
-//        User user = userService.findUserById(id);
-//        if(user == null){
-//            return RestResponse.failure("用户不存在");
-//        }
-//        userService.deleteUser(user);
-//        return RestResponse.success();
-//    }
-//
+    public Result delete(@RequestParam(value = "id",required = false)String id){
+        if(id == null || id.equals("0") || id.equals("1")){
+            return Result.error(ResultCode.PARAM_IS_BLANK,"参数错误");
+        }
+        User user = userService.findUserById(Long.valueOf(id));
+        if(user == null){
+            return Result.error(ResultCode.DATA_IS_WRONG,"用户不存在");
+        }
+        userService.deleteUser(user);
+        return Result.success();
+    }
+
 //    @RequiresPermissions("sys:user:delete")
 //    @PostMapping("deleteSome")
 //    @ResponseBody
@@ -220,15 +220,15 @@ public class UserConteroller extends BaseController {
         List<ShowMenu> list = menuService.getShowMenuByUser(userId);
         return list;
     }
-
-    @GetMapping("userinfo")
-    public String toEditMyInfo(Model model){
-        Long userId = MySysUser.id();
-        User user = userService.findUserById(userId);
-        model.addAttribute("userinfo",user);
-        model.addAttribute("userRole",user.getRoleLists());
-        return "admin/system/user/userInfo";
-    }
+//
+//    @GetMapping("userinfo")
+//    public String toEditMyInfo(Model model){
+//        Long userId = MySysUser.id();
+//        User user = userService.findUserById(userId);
+//        model.addAttribute("userinfo",user);
+//        model.addAttribute("userRole",user.getRoleLists());
+//        return "admin/system/user/userInfo";
+//    }
 
     @PostMapping("saveUserinfo")
 //    @SysLog("系统用户个人信息修改")
@@ -260,10 +260,10 @@ public class UserConteroller extends BaseController {
         return Result.success();
     }
 
-    @GetMapping("changePassword")
-    public String changePassword(){
-        return "admin/system/user/changePassword";
-    }
+//    @GetMapping("changePassword")
+//    public String changePassword(){
+//        return "admin/system/user/changePassword";
+//    }
 
 //    @RequiresPermissions("sys:user:changePassword")
 //    @PostMapping("changePassword")
