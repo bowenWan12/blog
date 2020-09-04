@@ -91,4 +91,18 @@ public class ZtreeVO implements Serializable{
 	public void setPid(Long pid) {
 		this.pid = pid;
 	}
+
+	@Override
+	public String toString() {
+		return "ZtreeVO{" +
+				"id=" + id +
+				", pid=" + pid +
+				", name='" + name + '\'' +
+				", url='" + url + '\'' +
+				", open=" + open +
+				", isParent=" + isParent +
+				", icon='" + icon + '\'' +
+				", children=" + children +
+				'}';
+	}
 }

@@ -179,7 +179,13 @@ public class UserConteroller extends BaseController {
     @PostMapping("delete")
     @ResponseBody
 //    @SysLog("删除系统用户数据(单个)")
-    public Result delete(@RequestParam(value = "id",required = false)String id){
+    public Result delete(@RequestBody Map<String,String> paramMap){
+        if (!paramMap.containsKey("id")){
+            return Result.error(ResultCode.PARAM_IS_BLANK);
+        }
+        String id = paramMap.get("id");
+        System.out.println("======================================"+id);
+
         if(id == null || id.equals("0") || id.equals("1")){
             return Result.error(ResultCode.PARAM_IS_BLANK,"参数错误");
         }
