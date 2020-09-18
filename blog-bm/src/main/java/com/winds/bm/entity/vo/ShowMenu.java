@@ -73,4 +73,17 @@ public class ShowMenu implements Serializable{
     public void setChildren(List<ShowMenu> children) {
         this.children = children;
     }
+
+    @Override
+    public String toString() {
+        return "ShowMenu{" +
+                "id=" + id +
+                ", pid=" + pid +
+                ", title='" + title + '\'' +
+                ", icon='" + icon + '\'' +
+                ", href='" + href + '\'' +
+                ", spread=" + spread +
+                ", children=" + children +
+                '}';
+    }
 }

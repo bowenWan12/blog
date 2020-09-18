@@ -111,7 +111,7 @@ public class UserConteroller extends BaseController {
 //        return "admin/system/user/edit";
 //    }
 
-//    @RequiresPermissions("sys:user:edit")
+    @RequiresPermissions("sys:user:edit")
     @PostMapping("edit")
     @ResponseBody
 //    @SysLog("保存系统用户编辑数据")

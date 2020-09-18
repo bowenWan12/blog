@@ -84,4 +84,17 @@ public class TreeMenu {
     public void setTitle(String title) {
         this.title = title;
     }
+
+    @Override
+    public String toString() {
+        return "TreeMenu{" +
+                "id=" + id +
+                ", pid=" + pid +
+                ", title='" + title + '\'' +
+                ", icon='" + icon + '\'' +
+                ", href='" + href + '\'' +
+                ", spread=" + spread +
+                ", children=" + children +
+                '}';
+    }
 }

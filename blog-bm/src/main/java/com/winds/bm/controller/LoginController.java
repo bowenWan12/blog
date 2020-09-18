@@ -88,10 +88,12 @@ public class LoginController extends BaseController {
 		}else {
 			/*就是代表当前的用户。*/
 			Subject user = SecurityUtils.getSubject();
-			UsernamePasswordToken token = new UsernamePasswordToken(username,password,Boolean.valueOf(rememberMe));
+			UsernamePasswordToken token = new UsernamePasswordToken(username,password);
 
 			try {
 				user.login(token);
+				//TODO 根据前端选择是否记住我
+//				token.setRememberMe(true);
 				if (user.isAuthenticated()) {
 				    Map<String,Object> m = new HashMap<>();
                     m.put(OAuthSessionManager.OAUTH_TOKEN, user.getSession().getId());
@@ -137,6 +139,27 @@ public class LoginController extends BaseController {
 		}else{
 			return r.error(ResultCode.ERROR, error);
 		}
+	}
+
+
+	@RequestMapping(value = "/handleLogin")
+	public Result handleLogin(HttpServletRequest request) {
+		String id = request.getHeader(OAuthSessionManager.OAUTH_TOKEN);
+		System.out.println("超时登录。。。:" + id);
+		return Result.error(ResultCode.SESSION_TIME_OUT);
+	}
+
+
+	@GetMapping("/logout")
+	@LogAnnotation(module = "退出", operation = "退出")
+	public Result logout() {
+
+		Result r = new Result();
+		Subject subject = SecurityUtils.getSubject();
+		subject.logout();
+
+		r.setResultCode(ResultCode.SUCCESS);
+		return r;
 	}
 
 	/**
